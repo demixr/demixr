@@ -1,0 +1,4 @@
+numpy==1.21.3
+torch==1.9.1
+torchaudio==0.9.1
+typing-extensions==3.10.0.2
