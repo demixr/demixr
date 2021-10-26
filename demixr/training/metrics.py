@@ -1,3 +1,5 @@
+#!/bin/python3
+
 import torch
 
 class SDR(torch.nn.Module):
