@@ -2,20 +2,19 @@ import torch
 import torchaudio
 import os
 import glob
+import librosa
+import h5py
 
 TRAIN_SPLIT = 0.8
 VALIDATION_SPLIT = 0.2
 
-
 class DemixrDataset(torch.utils.data.Dataset):
-    def __init__(self, path, input_file="mixture", output_file="vocals"):
-        self.path = path
+    def __init__(self, dataset, hdf_dir,instruments=["bass", "drums", "other", "vocals"]):
+        super(DemixrDataset, self).__init__()
 
-        self.input_file = input_file
-        self.output_file = output_file
-
-        self.folders = sorted(glob.glob(os.path.join(self.path, "*")))
-        self.len = len(self.folders)
+        self.dataset = dataset
+        self.hdf_dir = hdf_dir
+        self.instruments = instruments
 
     def __len__(self):
         return self.len
@@ -28,12 +27,9 @@ class DemixrDataset(torch.utils.data.Dataset):
         y, _ = torchaudio.load(self.__build_path__(idx, self.output_file))
         return x, y
 
-
-def create_dataloaders(data_path, output_file="vocals"):
-    dataset = DemixrDataset(os.path.join(data_path, "train"), output_file=output_file)
-    test_dataset = DemixrDataset(
-        os.path.join(data_path, "test"), output_file=output_file
-    )
+def create_dataloaders(musdbhq_dict):
+    dataset = DemixrDataset(musdbhq_dict, "train")
+    test_dataset = DemixrDataset(musdbhq_dict, "test")
 
     lengths = [round(len(dataset) * split) for split in [TRAIN_SPLIT, VALIDATION_SPLIT]]
     train_dataset, val_dataset = torch.utils.data.random_split(dataset, lengths=lengths)

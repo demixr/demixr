@@ -1,16 +1,16 @@
 from tqdm import tqdm
+import argparse
+import matplotlib as plt
+import numpy as np
+import metrics
+import utils
 from dataset import create_dataloaders
 
-import metrics
 
 import torch
 from torchmetrics.functional import si_sdr
 import torch.optim as optim
-from torchaudio.models import ConvTasNet
 
-import matplotlib as plt
-
-import numpy as np
 
 class Trainer:
     def __init__(self, model, lr, loss=torch.nn.MSELoss, stream="vocals"):
@@ -134,15 +134,13 @@ class Trainer:
         mean_loss, mean_sdr = [val / len(test_dataloader) for val in [acc_loss, acc_sdr]]
         return mean_loss, mean_sdr
 
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--dataset', type=str, default='data')
+    args = parser.parse_args()
+
+    musdbhq_dict = utils.create_musdbhq_dict(args.dataset)
+    train_dl, valid_dl, test_dl = create_dataloaders(musdbhq_dict)
+
 if __name__ == "__main__":
-    data_path = '../data/'
-
-    train_dl, valid_dl, test_dl = create_dataloaders(data_path)
-
-    model = ConvTasNet(1)
-
-    trainer = Trainer(model, 0.1)
-
-    trainer.fit(train_dl, valid_dl, 2)
-
-    trainer.evaluate(test_dl)
+    main()
