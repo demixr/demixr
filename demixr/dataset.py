@@ -4,14 +4,16 @@ import os
 import glob
 import librosa
 import h5py
+from torch.utils.data import Dataset
 
 TRAIN_SPLIT = 0.8
 VALIDATION_SPLIT = 0.2
 
-class DemixrDataset(torch.utils.data.Dataset):
-    def __init__(self, dataset, hdf_dir,instruments=["bass", "drums", "other", "vocals"]):
-        super(DemixrDataset, self).__init__()
 
+class DemixrDataset(Dataset):
+    def __init__(
+        self, dataset, hdf_dir, instruments=["bass", "drums", "other", "vocals"]
+    ):
         self.dataset = dataset
         self.hdf_dir = hdf_dir
         self.instruments = instruments
@@ -26,6 +28,7 @@ class DemixrDataset(torch.utils.data.Dataset):
         x, _ = torchaudio.load(self.__build_path__(idx, self.input_file))
         y, _ = torchaudio.load(self.__build_path__(idx, self.output_file))
         return x, y
+
 
 def create_dataloaders(musdbhq_dict):
     dataset = DemixrDataset(musdbhq_dict, "train")
