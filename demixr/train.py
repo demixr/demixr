@@ -139,10 +139,11 @@ class Trainer:
 def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--dataset", type=str, default="data")
+    parser.add_argument("--batch_size", type=int, default=1)
     args = parser.parse_args()
 
-    musdbhq_dict = utils.get_dataset_paths(args.dataset)
-    # train_dl, valid_dl, test_dl = create_dataloaders(musdbhq_dict)
+    dataset_paths = utils.get_dataset_paths(args.dataset)
+    train_dl, valid_dl, test_dl = create_dataloaders(dataset_paths, args.batch_size)
 
 
 if __name__ == "__main__":

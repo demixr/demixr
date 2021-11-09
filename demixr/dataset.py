@@ -2,55 +2,53 @@ import torch
 import torchaudio
 import os
 import glob
-import librosa
 import h5py
-from torch.utils.data import Dataset
+from torch.utils.data import Dataset, DataLoader
+import numpy as np
+
+from utils import load_audio
 
 TRAIN_SPLIT = 0.8
 VALIDATION_SPLIT = 0.2
 
 
 class DemixrDataset(Dataset):
-    def __init__(
-        self, dataset, hdf_dir, instruments=["bass", "drums", "other", "vocals"]
-    ):
-        self.dataset = dataset
-        self.hdf_dir = hdf_dir
+    def __init__(self, paths, instruments=["bass", "drums", "other", "vocals"]):
+        self.paths = paths
         self.instruments = instruments
 
     def __len__(self):
-        return self.len
-
-    def __build_path__(self, idx, label):
-        return os.path.join(self.folders[idx], f"{label}.wav")
+        return len(self.paths)
 
     def __getitem__(self, idx):
-        x, _ = torchaudio.load(self.__build_path__(idx, self.input_file))
-        y, _ = torchaudio.load(self.__build_path__(idx, self.output_file))
-        return x, y
+        song = self.paths[idx]
+        input, _ = load_audio(song["mixture"])
+
+        target_stems = [load_audio(song[stem]) for stem in self.instruments]
+        target = np.concatenate(target_stems, axis=0)
+
+        return input, target
 
 
-def create_dataloaders(musdbhq_dict):
-    dataset = DemixrDataset(musdbhq_dict, "train")
-    test_dataset = DemixrDataset(musdbhq_dict, "test")
+def create_dataloaders(dataset_paths, batch_size):
+    dataset = DemixrDataset(dataset_paths["train"])
+    test_dataset = DemixrDataset(dataset_paths["test"])
 
     lengths = [round(len(dataset) * split) for split in [TRAIN_SPLIT, VALIDATION_SPLIT]]
     train_dataset, val_dataset = torch.utils.data.random_split(dataset, lengths=lengths)
 
-    train_dataloader = torch.utils.data.DataLoader(
+    train_dataloader = DataLoader(
         train_dataset,
-        batch_size=1,
+        batch_size=batch_size,
         shuffle=True,
     )
 
-    val_dataloader = torch.utils.data.DataLoader(
+    val_dataloader = DataLoader(
         val_dataset,
-        batch_size=1,
+        batch_size=batch_size,
         shuffle=True,
     )
 
-    test_dataloader = torch.utils.data.DataLoader(
-        test_dataset, batch_size=1, shuffle=False
-    )
+    test_dataloader = DataLoader(test_dataset, batch_size=batch_size, shuffle=False)
 
     return train_dataloader, val_dataloader, test_dataloader
