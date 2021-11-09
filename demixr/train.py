@@ -1,16 +1,16 @@
 from tqdm import tqdm
+import argparse
+import matplotlib as plt
+import numpy as np
+import metrics
+import utils
 from dataset import create_dataloaders
 
-import metrics
 
 import torch
 from torchmetrics.functional import si_sdr
 import torch.optim as optim
-from torchaudio.models import ConvTasNet
 
-import matplotlib as plt
-
-import numpy as np
 
 class Trainer:
     def __init__(self, model, lr, loss=torch.nn.MSELoss, stream="vocals"):
@@ -20,15 +20,15 @@ class Trainer:
         self.criterion = loss
         self.optimizer = optim.Adam(model.parameters(), lr=lr)
         self.scheduler = optim.lr_scheduler.ReduceLROnPlateau(
-            self.optimizer, mode='max', factor=0.4, patience=2, cooldown=2)
-        self.history = {'lr': [], 'loss': [],
-                        'val_loss': [], 'sdr': [], 'val_sdr': []}
-        self.max_sdr = float('-inf')
+            self.optimizer, mode="max", factor=0.4, patience=2, cooldown=2
+        )
+        self.history = {"lr": [], "loss": [], "val_loss": [], "sdr": [], "val_sdr": []}
+        self.max_sdr = float("-inf")
 
     def fit(self, train_dataloader, val_dataloader, nb_epochs):
         for epoch in range(nb_epochs):
             train_loss = val_loss = train_sdr = val_sdr = 0.0
-            print(f'\nEpoch {epoch + 1}/{nb_epochs}')
+            print(f"\nEpoch {epoch + 1}/{nb_epochs}")
 
             nb_batches = len(train_dataloader)
 
@@ -52,9 +52,9 @@ class Trainer:
                 self.optimizer.step()
 
                 tqloader.set_postfix(
-                    loss=train_loss/(i + 1),
-                    sdr=train_sdr[0].item()/(i + 1),
-                    lr=self.scheduler.optimizer.param_groups[0]['lr']
+                    loss=train_loss / (i + 1),
+                    sdr=train_sdr[0].item() / (i + 1),
+                    lr=self.scheduler.optimizer.param_groups[0]["lr"],
                 )
 
                 self.model.eval()
@@ -75,26 +75,26 @@ class Trainer:
                 val_sdr = torch.mean(val_sdr / (len(val_dataloader)))
                 train_loss = train_loss / len(train_dataloader)
                 val_loss = val_loss / len(val_dataloader)
-                lr = self.scheduler.optimizer.param_groups[0]['lr']
+                lr = self.scheduler.optimizer.param_groups[0]["lr"]
 
                 self.__save_history(lr, train_loss, val_loss, train_sdr, val_sdr)
 
                 print(
-                    f'Epoch {epoch + 1}, '
-                    f'loss = {train_loss:.3f}, '
-                    f'sdr = {train_sdr:.3f}, '
-                    f'val_loss = {val_loss:.3f}, '
-                    f'val_sdr = {val_sdr:.3f}'
+                    f"Epoch {epoch + 1}, "
+                    f"loss = {train_loss:.3f}, "
+                    f"sdr = {train_sdr:.3f}, "
+                    f"val_loss = {val_loss:.3f}, "
+                    f"val_sdr = {val_sdr:.3f}"
                 )
 
                 if val_sdr > self.max_sdr:
                     print(
-                        f'Model saved. SDR updated: {self.max_val_sdr:.3f} -> {val_sdr:.3f}\n')
+                        f"Model saved. SDR updated: {self.max_val_sdr:.3f} -> {val_sdr:.3f}\n"
+                    )
                     self.max_val_sdr = val_sdr
-                    torch.save(self.model.state_dict(), 'demixr_sdr.pt')
+                    torch.save(self.model.state_dict(), "demixr_sdr.pt")
 
                 self.scheduler.step(val_sdr)
-
 
     def evaluate(self, test_dataloader):
         torch.cuda.empty_cache()
@@ -117,32 +117,34 @@ class Trainer:
                 acc_loss += loss.detach().item()
                 result = pred.astype(np.uint)
 
-
                 total_sdr.insert(0, si_sdr(result, labels))
                 acc_sdr += total_sdr[0]
 
                 tqloader.set_postfix(
-                    loss=acc_loss/(i + 1),
-                    sdr=acc_sdr[0].item()/(i + 1),
-                    lr=self.scheduler.optimizer.param_groups[0]['lr']
+                    loss=acc_loss / (i + 1),
+                    sdr=acc_sdr[0].item() / (i + 1),
+                    lr=self.scheduler.optimizer.param_groups[0]["lr"],
                 )
 
         total_sdr = [input[0] for input in total_sdr]
         plt.boxplot(total_sdr, showmeans=True)
         plt.show()
 
-        mean_loss, mean_sdr = [val / len(test_dataloader) for val in [acc_loss, acc_sdr]]
+        mean_loss, mean_sdr = [
+            val / len(test_dataloader) for val in [acc_loss, acc_sdr]
+        ]
         return mean_loss, mean_sdr
 
+
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument("--dataset", type=str, default="data")
+    parser.add_argument("--batch_size", type=int, default=1)
+    args = parser.parse_args()
+
+    dataset_paths = utils.get_dataset_paths(args.dataset)
+    train_dl, valid_dl, test_dl = create_dataloaders(dataset_paths, args.batch_size)
+
+
 if __name__ == "__main__":
-    data_path = '../data/'
-
-    train_dl, valid_dl, test_dl = create_dataloaders(data_path)
-
-    model = ConvTasNet(1)
-
-    trainer = Trainer(model, 0.1)
-
-    trainer.fit(train_dl, valid_dl, 2)
-
-    trainer.evaluate(test_dl)
+    main()
