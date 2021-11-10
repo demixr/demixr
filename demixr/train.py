@@ -5,6 +5,7 @@ import numpy as np
 import metrics
 import utils
 from dataset import create_dataloaders
+from pathlib import Path
 
 
 import torch
@@ -138,7 +139,7 @@ class Trainer:
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--dataset", type=str, default="data")
+    parser.add_argument("--dataset", type=Path, default="data")
     parser.add_argument("--batch_size", type=int, default=1)
     args = parser.parse_args()
 
