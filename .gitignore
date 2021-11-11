@@ -102,7 +102,6 @@ celerybeat.pid
 *.sage.py
 
 # Environments
-.env
 .venv
 env/
 venv/
@@ -128,4 +127,21 @@ dmypy.json
 # Pyre type checker
 .pyre/
 
+ separation using Pytorch.### VisualStudioCode
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+*.code-workspace
+**/.vscode
+
+# JetBrains
+.idea/
+
+# Lightning-Hydra-Template
 data/
+logs/
+wandb/
+.env
+.autoenv
