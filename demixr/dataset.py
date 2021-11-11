@@ -22,9 +22,9 @@ class DemixrDataset(Dataset):
 
     def __getitem__(self, idx):
         song = self.paths[idx]
-        input, _ = load_audio(song["mixture"])
+        input, _ = load_audio(song["mixture"], mono=False)
 
-        target_stems = [load_audio(song[stem]) for stem in self.instruments]
+        target_stems = [load_audio(song[stem], mono=False) for stem in self.instruments]
         target = np.concatenate(target_stems, axis=0)
 
         return input, target
