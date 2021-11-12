@@ -8,7 +8,7 @@ from torchmetrics.classification.accuracy import Accuracy
 from src.models.modules.simple_dense_net import SimpleDenseNet
 
 
-class MNISTLitModel(LightningModule):
+class DemixrLitModel(LightningModule):
     """
     Example of LightningModule for MNIST classification.
 

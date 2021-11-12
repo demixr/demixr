@@ -6,8 +6,8 @@
 defaults:
   - override /mode: exp.yaml
   - override /trainer: default.yaml
-  - override /model: mnist_model.yaml
-  - override /datamodule: mnist_datamodule.yaml
+  - override /model: demixr_model.yaml
+  - override /datamodule: musdb_datamodule.yaml
   - override /callbacks: default.yaml
   - override /logger: null
 
@@ -32,5 +32,5 @@ model:
   lr: 0.002
 
 datamodule:
-  batch_size: 64
+  batch_size: 1
   train_val_test_split: [55_000, 5_000, 10_000]

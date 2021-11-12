@@ -1,0 +1,27 @@
+_target_: src.models.demixr.Demixr
+
+target_name: 'bass'
+
+# absolute path to the model checkpoint you want to load (random init if null)
+ckpt: null
+
+# model
+num_blocks: 11
+l: 3
+g: 32
+k: 3
+bn: 8
+bias: False
+
+# stft
+n_fft: 16384
+dim_f: 2048
+dim_t: 256
+dim_c: 4
+hop_length: 1024
+
+overlap: 8192
+
+# optimizer
+lr: 0.0001
+optimizer: rmsprop

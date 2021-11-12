@@ -37,7 +37,7 @@ def test_optuna_sweep():
     command = [
         "run.py",
         "-m",
-        "hparams_search=mnist_optuna",
+        "hparams_search=demixr_optuna",
         "trainer=default",
         "++trainer.fast_dev_run=true",
     ]
