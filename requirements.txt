@@ -5,14 +5,14 @@ tqdm==4.62.3
 # --------- pytorch --------- #
 torch>=1.10.0
 torchvision>=0.11.0
-torchaudio==0.9.1
+torchaudio==0.10.0
 pytorch-lightning>=1.5.0
 torchmetrics>=0.6.0
 
 # --------- hydra --------- #
-hydra-core==1.1.0
+hydra-core==1.1.1
 hydra-colorlog==1.1.0
-hydra-optuna-sweeper==1.1.0
+hydra-optuna-sweeper==1.1.1
 # hydra-ax-sweeper
 # hydra-ray-launcher
 # hydra-submitit-launcher
